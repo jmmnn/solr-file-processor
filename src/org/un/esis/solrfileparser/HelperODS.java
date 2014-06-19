@@ -29,8 +29,8 @@ public class HelperODS {
     static List<String> getReferences(String fulltext)
     {
     	List<String> refs = new ArrayList<String>();
-		//Pattern pattern = Pattern.compile("(\\w+[\\-\\./\\(\\)]\\w+[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*)");
-    	Pattern pattern = Pattern.compile("[A-Z]+\\/{1}\\w+[\\.\\-\\/]*\\w+[\\.\\-\\/]*\\w*[\\.\\-\\/]*\\w*"); // ACC/1990/DEC/1-14
+		Pattern pattern = Pattern.compile("(\\w+[\\-\\./\\(\\)]\\w+[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*[\\-\\./\\(\\)]*\\w*)");
+    	//Pattern pattern = Pattern.compile("[A-Z]+\\/{1}\\w+[\\.\\-\\/]*\\w+[\\.\\-\\/]*\\w*[\\.\\-\\/]*\\w*"); // ACC/1990/DEC/1-14
     	Matcher matcher = pattern.matcher(fulltext);
 		while (matcher.find()) {
 			String potentialMatch = matcher.group();
@@ -44,24 +44,45 @@ public class HelperODS {
     
     static List<String> getSpecifcReference(String startIndicator, List<String> fullReferences, List<String> subtypes) {
     	List<String> specificRefs = new ArrayList<String>();
-    	for(String ref : specificRefs){
+    	for(String ref : fullReferences){
     		String currRef = ref.toUpperCase();
     	    if (currRef.startsWith(startIndicator.toUpperCase())) {
     	    	if (!specificRefs.contains(currRef)) {
     	    		if (subtypes.isEmpty())
-    	    			specificRefs.add(currRef);
+    	    			specificRefs.add(cleanReferenceLastCharacter(currRef));
     	    		else {
+    	    			boolean skip = false;
     	    			for(String st : subtypes) {
-    	    				if (currRef.startsWith(st)) {
-    	    					continue;
-    	    				}
-    	    				specificRefs.add(currRef);
+    	    				if (currRef.startsWith(st))
+    	    					skip = true;
     	    			}
+	    				if (!skip)
+	    					specificRefs.add(cleanReferenceLastCharacter(currRef));
     	    		}
     	    	}
     	    }
     	}
     	return specificRefs;
+    }
+    
+    static String cleanReferenceLastCharacter(String ref) {
+    	if (ref != null && !ref.equals("")) {
+    		String[] removeChars = { ")", ",", "." };
+    		boolean containedRC = false;
+    		for(String c : removeChars) {
+    			String lastChar = ref.substring(ref.length()-1);
+    			if (lastChar.equals(c)) {
+    				ref = ref.substring(0, ref.length()-1);
+    				containedRC = true;
+    			}
+    		}
+    		if (containedRC) {
+    			return cleanReferenceLastCharacter(ref);
+    		}else
+    			return ref;
+    	}
+    	else
+    		return "";
     }
     
     static String getDocumentType(String sym) {

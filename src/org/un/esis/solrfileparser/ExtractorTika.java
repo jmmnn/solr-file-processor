@@ -27,28 +27,35 @@ public class ExtractorTika {
 		Map<String, String> metaData = new HashMap<String, String>();
 		
 		try {		
+			// Open an IS using the file passed in with param
 			InputStream is = new FileInputStream(file);
 			Metadata metadata = new Metadata();
 			BodyContentHandler ch = new BodyContentHandler(1000000000);
 			AutoDetectParser parser = new AutoDetectParser();
 		
 			Helper.displayInfo("INFO: Detecting the MIME Type of the File using Tika " + file.getAbsolutePath());
+			// Identify the mime type
 			String mimeType = new Tika().detect(file);
 			metadata.set(Metadata.CONTENT_TYPE, mimeType);
 		
 			Helper.displayInfo("INFO: Extracting Data for File using Tika " + file.getAbsolutePath());
+			// Use the parser to extract the data
 			parser.parse(is, ch, metadata, new ParseContext());
+			// Close the is
 			is.close();
 		
+			// Extract the fulltext
 			String fullText = ch.toString();
 			Helper.displayInfo("INFO: Storing extracted data for " + file.getAbsolutePath());
 		  
+			// Loop through and obtain the meta data available
 			Helper.displayInfo("INFO: Obtaining the meta data");
 			for (int i = 0; i < metadata.names().length; i++) {
 				String item = metadata.names()[i];
 				metaData.put(item, metadata.get(item));
 			}
 		  
+			// Put the data into a KV for return
 			allData.put("fullText", fullText);
 			allData.put("metaData", metaData);
 

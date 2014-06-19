@@ -1,19 +1,27 @@
 package org.un.esis.solrfileparser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-
+//Author: Kevin Bradley
+//Date: 11-June-2014
+//Description: This is a consumer class for ODS called after the producer populates the queues
+//Version: 1.0
+//Code Reviewer:
 public class ConsumerODS implements IConsumer {
 
+	// Local instances of the queues
 	BlockingQueue<String> additionsQueue;
 	BlockingQueue<String> deletionsQueue;
+	List<String> additionOutputFilenames;
 
 	public ConsumerODS(BlockingQueue<String> additionsQueue, BlockingQueue<String> deletionsQueue) {
 		
 		this.additionsQueue = additionsQueue;
 		this.deletionsQueue = deletionsQueue;
-
+		this.additionOutputFilenames = new ArrayList<String>();
 	}
 
 	public void run() {
@@ -55,6 +63,7 @@ public class ConsumerODS implements IConsumer {
 						addCount = 0;
 						currentOutputFileCount++;
 						AppProp.outputSolrFileAdditions = new OutputSolrFile();
+						additionOutputFilenames.add(AppProp.outputFilenameAdditions);
 						Helper.setCurrentOutputFilename(currentOutputFileCount, true);
 						AppProp.outputSolrFileAdditions.writeOutput(AppProp.outputFilenameAdditions, "<add>\n");
 					}
@@ -66,9 +75,20 @@ public class ConsumerODS implements IConsumer {
 				Helper.recordError("Outputting Additions - " + e.getMessage());
 			}
 	    	// End the parent XML node element
+	    	additionOutputFilenames.add(AppProp.outputFilenameAdditions);
 	    	AppProp.outputSolrFileAdditions.writeOutput(AppProp.outputFilenameAdditions, "</add>");
 	    	Helper.displayInfo("INFO: Finished Adding ADDITION FILES");
-	    	Helper.postDataToSolr(AppProp.outputFilenameAdditions);
+	    	// Loop through each of the addition output files and post to Solr
+	    	for(String of : additionOutputFilenames) {
+	    		Helper.displayInfo("INFO: Posting OutputFile [" + of + "] to Solr");
+	    		while(!Helper.postDataToSolr(of)) {
+		    		try {
+						Thread.sleep(5 * 1000);
+					} catch (InterruptedException e) {
+						Helper.recordError("Interrupted Sleep - " + e.getMessage());
+					}
+	            }
+	    	}
     	}
     	
     	System.out.println("Updated Files: " + FileMapping.updateCount);

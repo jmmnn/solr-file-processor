@@ -13,6 +13,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class ProducerODS extends DefaultHandler implements IProducer {
@@ -35,8 +36,8 @@ public class ProducerODS extends DefaultHandler implements IProducer {
 	@Override
 	public boolean applyBusinessLogic() {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware( true);
-        factory.setValidating(true);
+        //factory.setNamespaceAware( true);
+        //factory.setValidating(true);
         try {
         	InputStream inputStream = new FileInputStream(AppProp.xmlMetaFilename);
     		Reader reader = new InputStreamReader(inputStream,"UTF-8");
@@ -62,6 +63,13 @@ public class ProducerODS extends DefaultHandler implements IProducer {
         	metaFile = new MetaFileODS();
         }
     }
+    
+	public void error(SAXParseException ex) throws SAXException {
+		Helper.recordError("ERROR: SAX Parser exception [" + AppProp.xmlMetaFilename + "]: at line [" + ex.getLineNumber() +"] " + ex.getMessage());
+	}
+	public void fatalError(SAXParseException ex) throws SAXException {
+		Helper.recordError("ERROR: FATAL SAX Parser exception [" + AppProp.xmlMetaFilename + "]: at line [" + ex.getLineNumber() +"] " + ex.getMessage());
+	}
     
     @SuppressWarnings("unchecked")
 	@Override

@@ -299,17 +299,19 @@ public class Helper {
 	};
 
 	// This method is used to post the output file data to Solr
-	// Returns: void
-    static void postDataToSolr(String outputFilename) {
-		 try {
-		        System.out.println("Posting Output File to Solr: " + AppProp.solrCollection);
-		        // Call the post.jar in the solr directory to push the output xml file to SOLR
-		        String output = callExternalJar(AppProp.solrJarFile, "-Dcommit=true -Durl=" + AppProp.solrCollection, outputFilename);
-		        System.out.println("Output from post.jar: " + output);
-		        System.out.println("Called solr post.jar file");
-	        } catch (Exception e) {
-				Helper.recordError("Error calling post.jar - " + e.getMessage());
-			}
+	// Returns: boolean
+    static boolean postDataToSolr(String outputFilename) {
+	 try {
+	        System.out.println("Posting Output File to Solr: " + AppProp.solrCollection);
+	        // Call the post.jar in the solr directory to push the output xml file to SOLR
+	        String output = callExternalJar(AppProp.solrJarFile, "-Dcommit=true -Durl=" + AppProp.solrCollection, outputFilename);
+	        System.out.println("Output from post.jar: " + output);
+	        System.out.println("Called solr post.jar file");
+	        return true;
+        } catch (Exception e) {
+			Helper.recordError("Error calling post.jar - " + e.getMessage());
+			return true;
+		}
 	}
 	
     // This method is used to close a currently open FTP connection

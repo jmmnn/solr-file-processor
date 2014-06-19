@@ -7,8 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
+//Author: Kevin Bradley
+//Date: 11-June-2014
+//Description: This is the file mapping class used to map the data extracted onto a specific Solr File
+//Version: 1.0
+//Code Reviewer:
 public class FileMapping {
 	
+	// Local variables to hold the counts
 	static int additionCount = 0;
 	static int updateCount = 0;
 	
@@ -150,7 +156,9 @@ public class FileMapping {
 				}
 			}
 			// Set the Extracted Meta Data values into the Solr Object
-			sFile.setLastModified(Helper.getMetaDataValue(metaFile.getMetaData(), "Last-Modified"));
+			sFile.setLastModified(
+					Helper.getMetaDataValue(metaFile.getMetaData(), "Last-Modified").isEmpty() ? "1900-01-01T00:00:00Z" : Helper.getMetaDataValue(metaFile.getMetaData(), "Last-Modified")
+			);
 			sFile.setMimeType(Helper.getMetaDataValue(metaFile.getMetaData(), "Content-Type"));
 			sFile.setRegistry(HelperOAJ.convertRegistry(registry));
 			sFile.setPdfDCTermsModified(Helper.getMetaDataValue(metaFile.getMetaData(), "dcterms:modified"));
@@ -169,7 +177,9 @@ public class FileMapping {
 			sFile.setPdfProducer(Helper.makeXMLTextSafe(Helper.getMetaDataValue(metaFile.getMetaData(), "producer")));
 			sFile.setPdfContentLength(metaFile.getFullText() != null ? Integer.toString(metaFile.getFullText().length()) : "0");	
 			sFile.setBody(Helper.makeXMLTextSafe(metaFile.getFullText()));
-			sFile.setDateCreated(Helper.getMetaDataValue(metaFile.getMetaData(), "meta:creation-date"));
+			sFile.setDateCreated(
+					Helper.getMetaDataValue(metaFile.getMetaData(), "meta:creation-date").isEmpty() ? "1900-01-01T00:00:00Z" : Helper.getMetaDataValue(metaFile.getMetaData(), "meta:creation-date")
+					);
 			Helper.displayInfo("INFO: Extracted all data now building SolrXML");
 			solrXML = constructOAJSolrXML(sFile);
 						
